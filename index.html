@@ -135,6 +135,8 @@
     .nav-tab.active { background: var(--primary); color: white; }
     .nav-tab.tab-agent { color: var(--agent); font-weight: 700; }
     .nav-tab.tab-agent.active { background: var(--agent); color: white; }
+    .nav-tab.tab-mistakes { color: var(--danger); font-weight: 700; }
+    .nav-tab.tab-mistakes.active { background: var(--danger); color: white; }
 
     /* Layout */
     .app-layout {
@@ -167,6 +169,21 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+    }
+
+    /* Auto-save notification pill */
+    .auto-save-pill {
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: var(--success);
+      padding: 0.45rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.76rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      margin-bottom: 0.85rem;
     }
 
     /* Progress Stats */
@@ -217,6 +234,7 @@
     }
     .legend-item { display: flex; align-items: center; gap: 0.25rem; }
     .legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+    .dot-answered { background: var(--primary-light); }
     .dot-correct { background: var(--success); }
     .dot-wrong { background: var(--danger); }
     .dot-current { border: 2px solid var(--primary-light); background: var(--surface); }
@@ -246,6 +264,7 @@
     }
     .pal-btn:hover { border-color: var(--primary-light); }
     .pal-btn.current { border: 2px solid var(--primary-light); font-weight: 800; transform: scale(1.05); }
+    .pal-btn.answered-only { background: rgba(59, 130, 246, 0.15); color: var(--primary-light); border-color: var(--primary-light); }
     .pal-btn.answered-correct { background: var(--success-light); color: var(--success); border-color: var(--success); }
     .pal-btn.answered-wrong { background: var(--danger-light); color: var(--danger); border-color: var(--danger); }
     .pal-btn.bookmarked::after {
@@ -259,6 +278,21 @@
 
     /* Main Section */
     .main-content { display: flex; flex-direction: column; gap: 1.25rem; }
+
+    /* Alert Banner for Mistakes Mode */
+    .mistakes-alert-banner {
+      background: var(--danger-light);
+      border: 1.5px solid var(--danger);
+      color: var(--danger);
+      padding: 1rem 1.25rem;
+      border-radius: var(--radius);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+    .mistakes-alert-banner p { font-size: 0.9rem; font-weight: 600; }
 
     /* Question Card */
     .question-card {
@@ -294,6 +328,7 @@
     .badge-day { background: #fef3c7; color: #92400e; }
     .badge-type { background: #f1f5f9; color: #475569; }
     .badge-agent { background: #ede9fe; color: #6d28d9; }
+    .badge-wrong { background: #fee2e2; color: #b91c1c; }
 
     .btn-star {
       background: transparent;
@@ -563,7 +598,7 @@
         <div class="brand-icon">🎓</div>
         <div class="brand-title">
           <h1>LUYỆN THI CHỨNG CHỈ GEN AI & AI AGENT (IIG)</h1>
-          <p>175 câu hỏi thi chuẩn IIG + 20 câu chuyên sâu AI Agent chuẩn quốc tế</p>
+          <p>175 câu chuẩn IIG + 20 câu AI Agent • Tự động lưu & tổng hợp câu sai thông minh</p>
         </div>
       </div>
       <div class="header-actions">
@@ -580,10 +615,10 @@
     <div class="nav-container">
       <button class="nav-tab active" data-view="practice">📝 Luyện tập theo câu (175 câu)</button>
       <button class="nav-tab tab-agent" data-view="agent">🤖 Chuyên đề AI Agent (20 câu)</button>
+      <button class="nav-tab tab-mistakes" data-view="mistakes">❌ Ôn câu đã sai (<span id="mistakeCountBadge">0</span>)</button>
       <button class="nav-tab" data-view="days">📅 Kế hoạch 7 ngày</button>
       <button class="nav-tab" data-view="topics">📂 Luyện theo Chủ đề</button>
       <button class="nav-tab" data-view="mock">⏱️ Thi thử Mô phỏng (Mock Exam)</button>
-      <button class="nav-tab" data-view="mistakes">❌ Ôn câu đã sai (<span id="mistakeCountBadge">0</span>)</button>
       <button class="nav-tab" data-view="bookmarks">⭐ Câu đã lưu (<span id="bookmarkCountBadge">0</span>)</button>
       <button class="nav-tab" data-view="cheatsheet">💡 Cẩm nang lý thuyết & Bẫy thi</button>
     </div>
@@ -598,13 +633,18 @@
       <!-- Progress Card -->
       <div class="card">
         <div class="card-title">
-          <span id="progressTitle">Tiến độ 175 câu gốc</span>
+          <span id="progressTitle">Tiến độ ôn tập</span>
           <button class="btn-secondary" style="font-size: 0.72rem; padding: 0.2rem 0.5rem;" id="resetDataBtn">Làm lại</button>
         </div>
+
+        <div class="auto-save-pill">
+          <span>⚡ Tự động ghi nhận câu sai ngầm</span>
+        </div>
+
         <div class="stat-grid">
           <div class="stat-item">
-            <div class="stat-number" id="statCompleted">0/175</div>
-            <div class="stat-label">Đã làm</div>
+            <div class="stat-number" id="statCompleted">0/195</div>
+            <div class="stat-label">Đã chọn câu trả lời</div>
           </div>
           <div class="stat-item">
             <div class="stat-number" id="statAccuracy" style="color: var(--success);">0%</div>
@@ -637,6 +677,8 @@
           <select id="filterSelect" class="select-input">
             <option value="all">Toàn bộ 175 câu hỏi</option>
             <option value="agent-all">🤖 20 câu chuyên sâu AI Agent</option>
+            <option value="wrong">❌ Chỉ câu đã làm sai (Cần ôn lại)</option>
+            <option value="marked">⭐ Chỉ câu đã đánh dấu sao</option>
             <option value="day-1">Ngày 1: Câu 1 - 25 (Nền tảng & Phân loại AI)</option>
             <option value="day-2">Ngày 2: Câu 26 - 50 (Prompt cơ bản & Chọn công cụ)</option>
             <option value="day-3">Ngày 3: Câu 51 - 75 (Prompt nâng cao & Kiểm soát)</option>
@@ -649,12 +691,11 @@
             <option value="topic-3">Chủ đề 3: Đa phương thức & Trực quan</option>
             <option value="topic-4">Chủ đề 4: An toàn, PII & Đạo đức AI</option>
             <option value="topic-5">Chủ đề 5: Phân tích dữ liệu & Quản trị</option>
-            <option value="wrong">Chỉ câu làm sai</option>
-            <option value="marked">Chỉ câu đã lưu (⭐)</option>
           </select>
         </div>
 
         <div class="palette-legend">
+          <div class="legend-item"><div class="legend-dot dot-answered"></div><span>Đã làm</span></div>
           <div class="legend-item"><div class="legend-dot dot-correct"></div><span>Đúng</span></div>
           <div class="legend-item"><div class="legend-dot dot-wrong"></div><span>Sai</span></div>
           <div class="legend-item"><div class="legend-dot dot-current"></div><span>Đang xem</span></div>
@@ -672,6 +713,15 @@
       
       <!-- VIEW: Practice Mode (Standard 175 questions) -->
       <div class="view-container active" id="practiceView">
+        
+        <div id="mistakesHeaderNotice" class="mistakes-alert-banner" style="display: none; margin-bottom: 1rem;">
+          <div>
+            <p>🎯 CHẾ ĐỘ ÔN CÂU ĐÃ SAI: Hệ thống đã tự động lọc các câu bạn làm sai để bạn ôn luyện lại!</p>
+            <span style="font-size: 0.8rem;">(Khi bạn trả lời đúng lại câu nào, câu đó sẽ tự động được gỡ khỏi danh sách sai).</span>
+          </div>
+          <button class="btn btn-secondary" style="font-size: 0.78rem; padding: 0.35rem 0.75rem;" onclick="exitMistakesMode()">Quay lại toàn bộ câu hỏi</button>
+        </div>
+
         <div class="question-card">
           <div class="q-header">
             <div class="q-badges">
@@ -679,6 +729,7 @@
               <span class="badge badge-topic" id="qTopicBadge">Nền tảng Gen AI</span>
               <span class="badge badge-day" id="qDayBadge">Ngày 1</span>
               <span class="badge badge-type" id="qTypeBadge">Trắc nghiệm</span>
+              <span class="badge badge-wrong" id="qWrongStatusBadge" style="display: none;">Đang làm sai ⚠️</span>
             </div>
             <button class="btn-star" id="qStarBtn" title="Đánh dấu câu hỏi cần xem lại">★</button>
           </div>
@@ -7875,7 +7926,7 @@ const AGENT_QUESTIONS_DATA = [
     const ALL_QUESTIONS = [...QUESTIONS_DATA, ...AGENT_QUESTIONS_DATA];
 
     // STATE
-    const STORAGE_KEY = 'GENAI_IIG_EXAM_PREP_V3';
+    const STORAGE_KEY = 'GENAI_IIG_EXAM_PREP_V4';
     let appState = {
       currentIndex: 0,
       agentCurrentIndex: 0,
@@ -7915,6 +7966,78 @@ const AGENT_QUESTIONS_DATA = [
       } catch (e) { console.error('Error saving state', e); }
     }
 
+    // SILENT AUTO-GRADING HELPER
+    function isAnswerCorrect(q, userAns) {
+      if (!userAns) return null; // not answered yet
+      
+      if (q.type === 'choice' || q.agentId) {
+        const expected = q.parsedAnswer || (q.answer ? [q.answer] : []);
+        if (q.isMultiple) {
+          if (!Array.isArray(userAns)) return false;
+          return (expected.length === userAns.length && expected.every(k => userAns.includes(k)));
+        } else {
+          return expected.includes(userAns);
+        }
+      } else if (q.type === 'sub_items' && q.subItems) {
+        if (typeof userAns !== 'object') return false;
+        let items = q.subItems.items;
+        let allRight = true;
+        let answeredCount = 0;
+        for (let s of items) {
+          const u = userAns[s.key];
+          if (u) answeredCount++;
+          const exp = s.expected.toLowerCase().trim();
+          if (!u || !exp.includes(u.toLowerCase().trim())) {
+            allRight = false;
+          }
+        }
+        if (answeredCount < items.length) return false;
+        return allRight;
+      } else if ((q.type === 'matching' || q.type === 'fill_prompt') && q.matching) {
+        if (typeof userAns !== 'object') return false;
+        const correctMap = q.matching.correct;
+        let keys = Object.keys(correctMap);
+        let allRight = true;
+        let answeredCount = 0;
+        for (let k of keys) {
+          const exp = correctMap[k];
+          const val = userAns[k] || '';
+          if (val) answeredCount++;
+          if (!val || (!val.includes(exp) && !exp.includes(val.charAt(0)))) {
+            allRight = false;
+          }
+        }
+        if (answeredCount < keys.length) return false;
+        return allRight;
+      }
+      return false;
+    }
+
+    // RECORD ANSWER AND AUTO-CLASSIFY MISTAKES SILENTLY
+    function recordAnswer(qId, val, isAgent) {
+      if (isAgent) {
+        appState.agentUserAnswers[qId] = val;
+      } else {
+        appState.userAnswers[qId] = val;
+      }
+
+      const q = ALL_QUESTIONS.find(item => item.id === qId);
+      if (q) {
+        const result = isAnswerCorrect(q, val);
+        if (result === true) {
+          if (!appState.correctQuestionIds.includes(qId)) appState.correctQuestionIds.push(qId);
+          appState.wrongQuestionIds = appState.wrongQuestionIds.filter(id => id !== qId);
+        } else if (result === false) {
+          if (!appState.wrongQuestionIds.includes(qId)) appState.wrongQuestionIds.push(qId);
+          appState.correctQuestionIds = appState.correctQuestionIds.filter(id => id !== qId);
+        }
+      }
+
+      saveState();
+      updateStats();
+      renderPalette();
+    }
+
     // COUNTDOWN
     function updateCountdown() {
       const now = new Date();
@@ -7939,6 +8062,10 @@ const AGENT_QUESTIONS_DATA = [
 
       if (f === 'agent-all') {
         list = AGENT_QUESTIONS_DATA;
+      } else if (f === 'wrong') {
+        list = ALL_QUESTIONS.filter(q => appState.wrongQuestionIds.includes(q.id));
+      } else if (f === 'marked') {
+        list = ALL_QUESTIONS.filter(q => appState.bookmarkedIds.includes(q.id));
       } else if (f.startsWith('day-')) {
         const dayNum = parseInt(f.replace('day-', ''));
         list = list.filter(q => q.day === dayNum);
@@ -7952,10 +8079,6 @@ const AGENT_QUESTIONS_DATA = [
         list = list.filter(q => q.topic.includes('An toàn'));
       } else if (f === 'topic-5') {
         list = list.filter(q => q.topic.includes('Phân tích dữ liệu'));
-      } else if (f === 'wrong') {
-        list = ALL_QUESTIONS.filter(q => appState.wrongQuestionIds.includes(q.id));
-      } else if (f === 'marked') {
-        list = ALL_QUESTIONS.filter(q => appState.bookmarkedIds.includes(q.id));
       }
 
       if (s) {
@@ -7986,10 +8109,13 @@ const AGENT_QUESTIONS_DATA = [
           btn.classList.add('current');
         }
 
+        const isAnswered = appState.userAnswers[q.id] || appState.agentUserAnswers[q.id];
         if (appState.correctQuestionIds.includes(q.id)) {
           btn.classList.add('answered-correct');
         } else if (appState.wrongQuestionIds.includes(q.id)) {
           btn.classList.add('answered-wrong');
+        } else if (isAnswered) {
+          btn.classList.add('answered-only');
         }
 
         if (appState.bookmarkedIds.includes(q.id)) {
@@ -8008,10 +8134,10 @@ const AGENT_QUESTIONS_DATA = [
 
     // STATS
     function updateStats() {
-      const total = QUESTIONS_DATA.length;
+      const total = ALL_QUESTIONS.length;
       const correct = appState.correctQuestionIds.length;
       const wrong = appState.wrongQuestionIds.length;
-      const answered = correct + wrong;
+      const answered = Object.keys(appState.userAnswers).length + Object.keys(appState.agentUserAnswers).length;
       const bookmarks = appState.bookmarkedIds.length;
 
       document.getElementById('statCompleted').innerText = answered + '/' + total;
@@ -8021,7 +8147,7 @@ const AGENT_QUESTIONS_DATA = [
       document.getElementById('mistakeCountBadge').innerText = wrong;
       document.getElementById('bookmarkCountBadge').innerText = bookmarks;
 
-      const accuracy = answered > 0 ? Math.round((correct / answered) * 100) : 0;
+      const accuracy = (correct + wrong) > 0 ? Math.round((correct / (correct + wrong)) * 100) : 0;
       document.getElementById('statAccuracy').innerText = accuracy + '%';
       document.getElementById('progressBar').style.width = Math.round((answered / total) * 100) + '%';
     }
@@ -8135,14 +8261,36 @@ const AGENT_QUESTIONS_DATA = [
       }
     }
 
-    // RENDER PRACTICE QUESTION (175 QUESTIONS)
+    // EXIT MISTAKES MODE
+    function exitMistakesMode() {
+      appState.filter = 'all';
+      document.getElementById('filterSelect').value = 'all';
+      document.getElementById('mistakesHeaderNotice').style.display = 'none';
+      renderPalette();
+      renderCurrentQuestion();
+    }
+
+    // RENDER PRACTICE QUESTION (175 QUESTIONS + SEARCH / FILTER)
     function renderCurrentQuestion() {
       const filtered = getFilteredQuestions();
+      
+      // Toggle mistakes notice banner
+      if (appState.filter === 'wrong') {
+        document.getElementById('mistakesHeaderNotice').style.display = 'flex';
+      } else {
+        document.getElementById('mistakesHeaderNotice').style.display = 'none';
+      }
+
       if (filtered.length === 0) {
-        document.getElementById('qStem').innerHTML = '<em>Không tìm thấy câu hỏi phù hợp với bộ lọc hiện tại.</em>';
+        if (appState.filter === 'wrong') {
+          document.getElementById('qStem').innerHTML = '<div style="text-align: center; padding: 2rem;"><div style="font-size: 2.5rem;">🎉</div><h3 style="color: var(--success); margin: 0.5rem 0;">Tuyệt vời! Bạn không còn câu nào bị làm sai!</h3><p style="color: var(--text-muted);">Tất cả các câu bạn từng trả lời đều đã chính xác hoặc chưa làm.</p></div>';
+        } else {
+          document.getElementById('qStem').innerHTML = '<em>Không tìm thấy câu hỏi phù hợp với bộ lọc hiện tại.</em>';
+        }
         document.getElementById('optionsContainer').innerHTML = '';
         document.getElementById('illustrationContainer').style.display = 'none';
         document.getElementById('explanationBox').classList.remove('show');
+        document.getElementById('qWrongStatusBadge').style.display = 'none';
         return;
       }
 
@@ -8160,6 +8308,10 @@ const AGENT_QUESTIONS_DATA = [
       else if (q.type === 'sub_items') typeLabel = 'Nhận định (Yes/No, Đúng/Sai)';
       else if (q.type === 'matching' || q.type === 'fill_prompt') typeLabel = 'Ghép nối / Kéo thả';
       document.getElementById('qTypeBadge').innerText = typeLabel;
+
+      // Wrong status badge
+      const isCurrentlyWrong = appState.wrongQuestionIds.includes(q.id);
+      document.getElementById('qWrongStatusBadge').style.display = isCurrentlyWrong ? 'inline-block' : 'none';
 
       // Star / Bookmark Button
       const isBookmarked = appState.bookmarkedIds.includes(q.id);
@@ -8189,7 +8341,7 @@ const AGENT_QUESTIONS_DATA = [
       // Options / Inputs
       const optContainer = document.getElementById('optionsContainer');
       optContainer.innerHTML = '';
-      const userAns = appState.userAnswers[q.id];
+      const userAns = q.agentId ? appState.agentUserAnswers[q.id] : appState.userAnswers[q.id];
 
       if (q.type === 'choice' && q.options) {
         q.options.forEach(opt => {
@@ -8207,18 +8359,19 @@ const AGENT_QUESTIONS_DATA = [
           card.innerHTML = '<div class="opt-key">' + opt.key + '</div><div class="opt-text">' + opt.text + '</div>';
 
           card.onclick = () => {
+            let newVal;
             if (q.isMultiple) {
-              let currentArr = Array.isArray(appState.userAnswers[q.id]) ? [...appState.userAnswers[q.id]] : [];
+              let currentArr = Array.isArray(userAns) ? [...userAns] : [];
               if (currentArr.includes(opt.key)) {
                 currentArr = currentArr.filter(k => k !== opt.key);
               } else {
                 currentArr.push(opt.key);
               }
-              appState.userAnswers[q.id] = currentArr;
+              newVal = currentArr;
             } else {
-              appState.userAnswers[q.id] = opt.key;
+              newVal = opt.key;
             }
-            saveState();
+            recordAnswer(q.id, newVal, !!q.agentId);
             renderCurrentQuestion();
           };
 
@@ -8243,11 +8396,9 @@ const AGENT_QUESTIONS_DATA = [
           const btns = subCard.querySelectorAll('.btn-toggle-sub');
           btns.forEach(b => {
             b.onclick = () => {
-              if (!appState.userAnswers[q.id] || typeof appState.userAnswers[q.id] !== 'object') {
-                appState.userAnswers[q.id] = {};
-              }
-              appState.userAnswers[q.id][sub.key] = b.getAttribute('data-val');
-              saveState();
+              let updated = (userAns && typeof userAns === 'object') ? { ...userAns } : {};
+              updated[sub.key] = b.getAttribute('data-val');
+              recordAnswer(q.id, updated, !!q.agentId);
               renderCurrentQuestion();
             };
           });
@@ -8276,11 +8427,9 @@ const AGENT_QUESTIONS_DATA = [
 
           const selectEl = row.querySelector('.matching-select');
           selectEl.onchange = (e) => {
-            if (!appState.userAnswers[q.id] || typeof appState.userAnswers[q.id] !== 'object') {
-              appState.userAnswers[q.id] = {};
-            }
-            appState.userAnswers[q.id][item.id] = e.target.value;
-            saveState();
+            let updated = (userAns && typeof userAns === 'object') ? { ...userAns } : {};
+            updated[item.id] = e.target.value;
+            recordAnswer(q.id, updated, !!q.agentId);
           };
 
           matchBox.appendChild(row);
@@ -8295,12 +8444,12 @@ const AGENT_QUESTIONS_DATA = [
       document.getElementById('explanationBox').classList.remove('show');
     }
 
-    // CHECK ANSWER LOGIC FOR PRACTICE
+    // CHECK ANSWER BUTTON LOGIC
     function checkAnswer() {
       const filtered = getFilteredQuestions();
       if (filtered.length === 0) return;
       const q = filtered[appState.currentIndex];
-      const userAns = appState.userAnswers[q.id];
+      const userAns = q.agentId ? appState.agentUserAnswers[q.id] : appState.userAnswers[q.id];
 
       if (!userAns) {
         alert('Vui lòng chọn hoặc điền câu trả lời trước khi kiểm tra!');
@@ -8310,7 +8459,7 @@ const AGENT_QUESTIONS_DATA = [
       let isCorrect = false;
 
       if (q.type === 'choice') {
-        const expected = q.parsedAnswer || [];
+        const expected = q.parsedAnswer || (q.answer ? [q.answer] : []);
         if (q.isMultiple) {
           if (Array.isArray(userAns)) {
             isCorrect = (expected.length === userAns.length && expected.every(k => userAns.includes(k)));
@@ -8424,8 +8573,7 @@ const AGENT_QUESTIONS_DATA = [
         card.innerHTML = '<div class="opt-key" style="color: var(--agent);">' + opt.key + '</div><div class="opt-text">' + opt.text + '</div>';
 
         card.onclick = () => {
-          appState.agentUserAnswers[q.id] = opt.key;
-          saveState();
+          recordAnswer(q.id, opt.key, true);
           renderAgentQuestion();
         };
 
@@ -8568,6 +8716,12 @@ const AGENT_QUESTIONS_DATA = [
         } else if (view === 'agent') {
           document.getElementById('agentView').classList.add('active');
           renderAgentQuestion();
+        } else if (view === 'mistakes') {
+          appState.filter = 'wrong';
+          document.getElementById('filterSelect').value = 'wrong';
+          document.getElementById('practiceView').classList.add('active');
+          renderPalette();
+          renderCurrentQuestion();
         } else if (view === 'days') {
           appState.filter = 'day-1';
           document.getElementById('filterSelect').value = 'day-1';
@@ -8582,12 +8736,6 @@ const AGENT_QUESTIONS_DATA = [
           renderCurrentQuestion();
         } else if (view === 'mock') {
           document.getElementById('mockView').classList.add('active');
-        } else if (view === 'mistakes') {
-          appState.filter = 'wrong';
-          document.getElementById('filterSelect').value = 'wrong';
-          document.getElementById('practiceView').classList.add('active');
-          renderPalette();
-          renderCurrentQuestion();
         } else if (view === 'bookmarks') {
           appState.filter = 'marked';
           document.getElementById('filterSelect').value = 'marked';
