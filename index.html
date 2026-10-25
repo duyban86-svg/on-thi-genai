@@ -997,17 +997,17 @@
         {
           "key": "a",
           "text": "Thêm các tài liệu để AI sử dụng làm tư liệu nghiên cứu.",
-          "expected": "Có"
+          "expected": "Yes"
         },
         {
           "key": "b",
           "text": "Tham chiếu đến một cuộc trò chuyện trước đó trong cùng một chuỗi hội thoại.",
-          "expected": "Có"
+          "expected": "Yes"
         },
         {
           "key": "c",
           "text": "Yêu cầu AI tạo bản tóm tắt.",
-          "expected": "Không"
+          "expected": "No"
         }
       ]
     },
@@ -2527,24 +2527,24 @@
         {
           "key": "a",
           "text": "Dữ liệu có bản quyền thường được dùng để huấn luyện các mô hình AI.",
-          "expected": "Yes"
+          "expected": "Đúng"
         },
         {
           "key": "b",
           "text": "Quy trình sử dụng AI trong môi trường chuyên nghiệp của công ty nên được ghi chép và minh bạch.",
-          "expected": "Yes"
+          "expected": "Đúng"
         },
         {
           "key": "c",
           "text": "Công ty nên tuân theo các quy định của cơ quan quản lý ngành về việc sử dụng dữ liệu có bản quyền trong AI.",
-          "expected": "Yes"
+          "expected": "Đúng"
         }
       ]
     },
     "matching": null,
     "rawAnswer": "a. Yes; b. Yes; c. Yes",
     "parsedAnswer": null,
-    "explanation": "Dữ liệu có bản quyền từng được dùng huấn luyện nhiều mô hình (Yes). Quy trình dùng AI trong doanh nghiệp cần minh bạch (Yes). Doanh nghiệp cần tuân thủ quy định quản lý bản quyền (Yes).",
+    "explanation": "Dữ liệu có bản quyền từng được dùng huấn luyện nhiều mô hình (Đúng - Yes). Quy trình dùng AI trong doanh nghiệp cần minh bạch (Đúng - Yes). Doanh nghiệp cần tuân thủ quy định quản lý bản quyền (Đúng - Yes).",
     "imageType": null
   },
   {
@@ -6739,24 +6739,24 @@
         {
           "key": "1",
           "text": "Generative AI có thể được sử dụng để lan truyền sự thiên lệch (bias).",
-          "expected": "Yes"
+          "expected": "Đúng"
         },
         {
           "key": "2",
           "text": "Không tính đến các ngày lễ tôn giáo khi lập lịch làm việc là một ví dụ về sự thiên lệch.",
-          "expected": "Yes"
+          "expected": "Đúng"
         },
         {
           "key": "3",
           "text": "Tình trạng kinh tế có thể là một nguồn gây thiên lệch.",
-          "expected": "Yes"
+          "expected": "Đúng"
         }
       ]
     },
     "matching": null,
     "rawAnswer": "1 - Yes\n2 - Yes\n3 - Yes\n\n\n\n44",
     "parsedAnswer": null,
-    "explanation": "Gen AI có thể lan truyền thiên lệch (Yes). Lập lịch bỏ qua ngày lễ tôn giáo là một ví dụ về thiên lệch văn hóa (Yes). Tình trạng kinh tế là nguồn gây thiên lệch xã hội (Yes).",
+    "explanation": "Gen AI có thể lan truyền thiên lệch (Đúng - Yes). Lập lịch bỏ qua ngày lễ tôn giáo là một ví dụ về thiên lệch văn hóa (Đúng - Yes). Tình trạng kinh tế là nguồn gây thiên lệch xã hội (Đúng - Yes).",
     "imageType": null
   },
   {
@@ -8016,6 +8016,28 @@ const AGENT_QUESTIONS_DATA = [
 
     // SILENT AUTO-GRADING HELPER
     // Returns: true (correct), false (wrong), or null (in progress / incomplete answer)
+    
+    function normalizeBinaryAnswer(val) {
+      if (!val) return '';
+      const s = val.toString().trim().toLowerCase();
+      const YES_SET = ['đúng', 'yes', 'có', 'true', 'y', 't', 'dung', 'co'];
+      const NO_SET = ['sai', 'no', 'không', 'khong', 'false', 'n', 'f'];
+      if (YES_SET.includes(s)) return 'YES';
+      if (NO_SET.includes(s)) return 'NO';
+      return s;
+    }
+
+    function isSubItemAnswerMatch(val1, val2) {
+      if (!val1 || !val2) return false;
+      const n1 = normalizeBinaryAnswer(val1);
+      const n2 = normalizeBinaryAnswer(val2);
+      if (n1 === 'YES' && n2 === 'YES') return true;
+      if (n1 === 'NO' && n2 === 'NO') return true;
+      const s1 = val1.toString().trim().toLowerCase();
+      const s2 = val2.toString().trim().toLowerCase();
+      return (s1 === s2 || s2.includes(s1) || s1.includes(s2));
+    }
+
     function isAnswerCorrect(q, userAns) {
       if (!userAns) return null; // not answered
       
@@ -8038,8 +8060,7 @@ const AGENT_QUESTIONS_DATA = [
         for (let s of items) {
           const u = userAns[s.key];
           if (u) answeredCount++;
-          const exp = (s.expected || '').toLowerCase().trim();
-          if (!u || !exp.includes(u.toLowerCase().trim())) {
+          if (!u || !isSubItemAnswerMatch(u, s.expected)) {
             allRight = false;
           }
         }
@@ -8479,7 +8500,7 @@ const AGENT_QUESTIONS_DATA = [
 
           let btnsHtml = '';
           choices.forEach(ch => {
-            const isActive = (currentSubAns === ch);
+            const isActive = (currentSubAns === ch || isSubItemAnswerMatch(currentSubAns, ch));
             btnsHtml += '<button class="btn-toggle-sub ' + (isActive ? 'active' : '') + '" data-val="' + ch + '">' + ch + '</button>';
           });
 
@@ -8590,15 +8611,14 @@ const AGENT_QUESTIONS_DATA = [
 
         subItems.forEach((sub, i) => {
           const u = (userAns && typeof userAns === 'object') ? userAns[sub.key] : null;
-          const exp = (sub.expected || '').toLowerCase().trim();
-          const isSubRight = (u && exp.includes(u.toLowerCase().trim()));
+          const isSubRight = isSubItemAnswerMatch(u, sub.expected);
           if (!isSubRight) allMatched = false;
 
           if (rows[i]) {
             const btns = rows[i].querySelectorAll('.btn-toggle-sub');
             btns.forEach(b => {
-              const val = b.getAttribute('data-val').toLowerCase().trim();
-              if (exp.includes(val)) {
+              const val = b.getAttribute('data-val');
+              if (isSubItemAnswerMatch(val, sub.expected)) {
                 b.classList.add('is-correct');
               } else if (b.classList.contains('active')) {
                 b.classList.add('is-wrong');
@@ -8963,7 +8983,8 @@ const AGENT_QUESTIONS_DATA = [
 
           let btnsHtml = '';
           q.subItems.choices.forEach(ch => {
-            btnsHtml += '<button class="btn-toggle-sub ' + (currentSubAns === ch ? 'active' : '') + '" data-val="' + ch + '">' + ch + '</button>';
+            const isSubActive = (currentSubAns === ch || isSubItemAnswerMatch(currentSubAns, ch));
+          btnsHtml += '<button class="btn-toggle-sub ' + (isSubActive ? 'active' : '') + '" data-val="' + ch + '">' + ch + '</button>';
           });
 
           subCard.innerHTML = '<div class="subitem-text"><strong>' + sub.key + '.</strong> ' + sub.text + '</div>' +
@@ -9033,9 +9054,8 @@ const AGENT_QUESTIONS_DATA = [
         } else if (q.type === 'sub_items' && typeof u === 'object') {
           let allMatch = true;
           q.subItems.items.forEach(s => {
-            const exp = s.expected.toLowerCase();
-            const actual = (u[s.key] || '').toLowerCase();
-            if (!actual || !exp.includes(actual)) allMatch = false;
+            const actual = u[s.key];
+            if (!actual || !isSubItemAnswerMatch(actual, s.expected)) allMatch = false;
           });
           if (allMatch) correctCount++;
         } else if (q.matching && typeof u === 'object') {
