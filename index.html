@@ -294,6 +294,26 @@
     }
     .mistakes-alert-banner p { font-size: 0.9rem; font-weight: 600; }
 
+    /* Notice for Multiple Choice Questions */
+    .multi-select-notice {
+      background: #eff6ff;
+      border: 1.5px solid #3b82f6;
+      color: #1e40af;
+      padding: 0.65rem 1rem;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    [data-theme="dark"] .multi-select-notice {
+      background: #1e3a8a;
+      border-color: #60a5fa;
+      color: #dbeafe;
+    }
+
     /* Question Card */
     .question-card {
       background: var(--surface);
@@ -327,6 +347,7 @@
     .badge-topic { background: #e0e7ff; color: #4338ca; }
     .badge-day { background: #fef3c7; color: #92400e; }
     .badge-type { background: #f1f5f9; color: #475569; }
+    .badge-multi { background: #fee2e2; color: #b91c1c; border: 1px solid #ef4444; }
     .badge-agent { background: #ede9fe; color: #6d28d9; }
     .badge-wrong { background: #fee2e2; color: #b91c1c; }
 
@@ -379,6 +400,7 @@
       gap: 0.85rem;
       transition: all 0.2s;
       background: var(--surface);
+      position: relative;
     }
     .option-card:hover { border-color: var(--primary-light); background: rgba(59, 130, 246, 0.04); }
     .option-card.selected { border-color: var(--primary); background: rgba(30, 64, 175, 0.06); }
@@ -397,11 +419,25 @@
       font-weight: 700;
       font-size: 0.85rem;
       color: var(--text-muted);
+      flex-shrink: 0;
+    }
+    .option-card.is-multi-opt .opt-key {
+      border-radius: 4px;
     }
     .option-card.selected .opt-key { background: var(--primary); color: white; border-color: var(--primary); }
     .option-card.correct .opt-key { background: var(--success); color: white; border-color: var(--success); }
     .option-card.incorrect .opt-key { background: var(--danger); color: white; border-color: var(--danger); }
     .opt-text { flex: 1; font-size: 0.95rem; line-height: 1.5; padding-top: 2px; }
+
+    /* Checkbox checkmark tag */
+    .opt-check-indicator {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-left: auto;
+      display: none;
+    }
+    .option-card.selected .opt-check-indicator { display: block; }
 
     /* Sub-items (Yes/No, Đúng/Sai) */
     .subitem-card {
@@ -598,7 +634,7 @@
         <div class="brand-icon">🎓</div>
         <div class="brand-title">
           <h1>LUYỆN THI CHỨNG CHỈ GEN AI & AI AGENT (IIG)</h1>
-          <p>175 câu chuẩn IIG + 20 câu AI Agent • Tự động lưu & tổng hợp câu sai thông minh</p>
+          <p>175 câu chuẩn IIG + 20 câu AI Agent • Đã hỗ trợ trọn vẹn chọn nhiều đáp án</p>
         </div>
       </div>
       <div class="header-actions">
@@ -638,7 +674,7 @@
         </div>
 
         <div class="auto-save-pill">
-          <span>⚡ Tự động ghi nhận câu sai ngầm</span>
+          <span>⚡ Tự động lưu & ghi nhận câu sai</span>
         </div>
 
         <div class="stat-grid">
@@ -678,6 +714,7 @@
             <option value="all">Toàn bộ 175 câu hỏi</option>
             <option value="agent-all">🤖 20 câu chuyên sâu AI Agent</option>
             <option value="wrong">❌ Chỉ câu đã làm sai (Cần ôn lại)</option>
+            <option value="multi-only">☑️ Chỉ các câu chọn nhiều đáp án (50 câu)</option>
             <option value="marked">⭐ Chỉ câu đã đánh dấu sao</option>
             <option value="day-1">Ngày 1: Câu 1 - 25 (Nền tảng & Phân loại AI)</option>
             <option value="day-2">Ngày 2: Câu 26 - 50 (Prompt cơ bản & Chọn công cụ)</option>
@@ -716,7 +753,7 @@
         
         <div id="mistakesHeaderNotice" class="mistakes-alert-banner" style="display: none; margin-bottom: 1rem;">
           <div>
-            <p>🎯 CHẾ ĐỘ ÔN CÂU ĐÃ SAI: Hệ thống đã tự động lọc các câu bạn làm sai để bạn ôn luyện lại!</p>
+            <p>🎯 CHẾ ĐỘ ÔN CÂU ĐÃ SAI: Hệ thống lọc riêng các câu bạn đã chọn sai để bạn luyện lại!</p>
             <span style="font-size: 0.8rem;">(Khi bạn trả lời đúng lại câu nào, câu đó sẽ tự động được gỡ khỏi danh sách sai).</span>
           </div>
           <button class="btn btn-secondary" style="font-size: 0.78rem; padding: 0.35rem 0.75rem;" onclick="exitMistakesMode()">Quay lại toàn bộ câu hỏi</button>
@@ -740,6 +777,12 @@
 
           <!-- Dynamic Illustration Container -->
           <div id="illustrationContainer" style="display: none;"></div>
+
+          <!-- Multiple choice instruction banner -->
+          <div id="multiNoticeBanner" class="multi-select-notice" style="display: none;">
+            <span>☑️ Câu hỏi này yêu cầu <strong>CHỌN NHIỀU ĐÁP ÁN</strong> (Bạn có thể nhấp chọn nhiều phương án cùng lúc).</span>
+            <span id="multiSelectedCounter" style="font-weight: 700;">Đã chọn: 0</span>
+          </div>
 
           <!-- Dynamic Options container -->
           <div class="options-list" id="optionsContainer">
@@ -1951,7 +1994,7 @@
     "day": 2,
     "topic": "Kỹ thuật Prompt & Tinh chỉnh",
     "type": "choice",
-    "isMultiple": false,
+    "isMultiple": true,
     "stem": "Một trợ lý nghiên cứu đang thực hiện một số nghiên cứu lịch sử bằng cách sử\ndụng Trí tuệ nhân tạo tạo sinh (Generative AI).\nTrợ lý này có thể làm gì để kiểm chứng thông tin được trình bày trong kết quả đầu ra của\nAI? (Chọn 2 cách)",
     "options": [
       {
@@ -4338,7 +4381,7 @@
     "day": 4,
     "topic": "Đa phương thức & Trực quan",
     "type": "choice",
-    "isMultiple": false,
+    "isMultiple": true,
     "stem": "Một video hướng dẫn sắp được trình chiếu cho những người không nói cùng\nngôn ngữ với người thuyết trình. Khi viết câu lệnh (prompt) để tự động tạo phụ đề,\nnhững hướng dẫn nào sau đây nên được đưa vào trong prompt? (Chọn 2 phương án)",
     "options": [
       {
@@ -6152,7 +6195,7 @@
     "day": 6,
     "topic": "An toàn, PII & Đạo đức AI",
     "type": "choice",
-    "isMultiple": false,
+    "isMultiple": true,
     "stem": "Những yếu tố nào trong Trí tuệ nhân tạo có thể khiến các mô hình AI khác\nnhau có mức độ thiên lệch (bias) khác nhau? (Chọn 2 yếu tố)",
     "options": [
       {
@@ -6962,7 +7005,7 @@
     "day": 7,
     "topic": "Phân tích dữ liệu & Quản trị",
     "type": "choice",
-    "isMultiple": false,
+    "isMultiple": true,
     "stem": "Đâu là ba trong số các mô hình của Trí tuệ nhân tạo tạo sinh (Generative\nAI). (Chọn 3 mô hình)",
     "options": [
       {
@@ -7926,7 +7969,7 @@ const AGENT_QUESTIONS_DATA = [
     const ALL_QUESTIONS = [...QUESTIONS_DATA, ...AGENT_QUESTIONS_DATA];
 
     // STATE
-    const STORAGE_KEY = 'GENAI_IIG_EXAM_PREP_V4';
+    const STORAGE_KEY = 'GENAI_IIG_EXAM_PREP_V5';
     let appState = {
       currentIndex: 0,
       agentCurrentIndex: 0,
@@ -8064,6 +8107,8 @@ const AGENT_QUESTIONS_DATA = [
         list = AGENT_QUESTIONS_DATA;
       } else if (f === 'wrong') {
         list = ALL_QUESTIONS.filter(q => appState.wrongQuestionIds.includes(q.id));
+      } else if (f === 'multi-only') {
+        list = QUESTIONS_DATA.filter(q => q.isMultiple);
       } else if (f === 'marked') {
         list = ALL_QUESTIONS.filter(q => appState.bookmarkedIds.includes(q.id));
       } else if (f.startsWith('day-')) {
@@ -8289,6 +8334,7 @@ const AGENT_QUESTIONS_DATA = [
         }
         document.getElementById('optionsContainer').innerHTML = '';
         document.getElementById('illustrationContainer').style.display = 'none';
+        document.getElementById('multiNoticeBanner').style.display = 'none';
         document.getElementById('explanationBox').classList.remove('show');
         document.getElementById('qWrongStatusBadge').style.display = 'none';
         return;
@@ -8303,11 +8349,21 @@ const AGENT_QUESTIONS_DATA = [
       document.getElementById('qTopicBadge').innerText = q.topic;
       document.getElementById('qDayBadge').innerText = q.day ? ('Ngày ' + q.day) : 'Mở rộng';
       
-      let typeLabel = 'Trắc nghiệm đơn';
-      if (q.type === 'choice' && q.isMultiple) typeLabel = 'Chọn nhiều đáp án';
-      else if (q.type === 'sub_items') typeLabel = 'Nhận định (Yes/No, Đúng/Sai)';
-      else if (q.type === 'matching' || q.type === 'fill_prompt') typeLabel = 'Ghép nối / Kéo thả';
+      let typeLabel = 'Trắc nghiệm đơn (Chọn 1)';
+      if (q.type === 'choice' && q.isMultiple) {
+        const numToSelect = (q.parsedAnswer && q.parsedAnswer.length) ? q.parsedAnswer.length : 2;
+        typeLabel = '☑️ CHỌN ' + numToSelect + ' ĐÁP ÁN';
+      } else if (q.type === 'sub_items') {
+        typeLabel = 'Nhận định (Yes/No, Đúng/Sai)';
+      } else if (q.type === 'matching' || q.type === 'fill_prompt') {
+        typeLabel = 'Ghép nối / Kéo thả';
+      }
       document.getElementById('qTypeBadge').innerText = typeLabel;
+      if (q.isMultiple) {
+        document.getElementById('qTypeBadge').className = 'badge badge-multi';
+      } else {
+        document.getElementById('qTypeBadge').className = 'badge badge-type';
+      }
 
       // Wrong status badge
       const isCurrentlyWrong = appState.wrongQuestionIds.includes(q.id);
@@ -8338,25 +8394,48 @@ const AGENT_QUESTIONS_DATA = [
       // Illustration
       renderIllustration(q.imageType);
 
+      // Multiple choice banner toggle
+      let rawUserAns = q.agentId ? appState.agentUserAnswers[q.id] : appState.userAnswers[q.id];
+      if (q.isMultiple && typeof rawUserAns === 'string') {
+        // Sanitize legacy single-string answers in localStorage for multi-choice questions
+        rawUserAns = [rawUserAns];
+        if (q.agentId) appState.agentUserAnswers[q.id] = rawUserAns;
+        else appState.userAnswers[q.id] = rawUserAns;
+      }
+      const userAns = rawUserAns;
+
+      const multiBanner = document.getElementById('multiNoticeBanner');
+      if (q.type === 'choice' && q.isMultiple) {
+        multiBanner.style.display = 'flex';
+        const expectedCount = (q.parsedAnswer && q.parsedAnswer.length) ? q.parsedAnswer.length : 2;
+        const currentCount = Array.isArray(userAns) ? userAns.length : 0;
+        document.getElementById('multiSelectedCounter').innerHTML = 'Đã chọn: <strong style="color: var(--primary); font-size: 1rem;">' + currentCount + '</strong> / ' + expectedCount;
+      } else {
+        multiBanner.style.display = 'none';
+      }
+
       // Options / Inputs
       const optContainer = document.getElementById('optionsContainer');
       optContainer.innerHTML = '';
-      const userAns = q.agentId ? appState.agentUserAnswers[q.id] : appState.userAnswers[q.id];
 
       if (q.type === 'choice' && q.options) {
         q.options.forEach(opt => {
           const card = document.createElement('div');
           card.className = 'option-card';
+          if (q.isMultiple) card.classList.add('is-multi-opt');
           
           let isSelected = false;
-          if (Array.isArray(userAns)) {
-            isSelected = userAns.includes(opt.key);
+          if (q.isMultiple) {
+            isSelected = Array.isArray(userAns) && userAns.includes(opt.key);
           } else {
             isSelected = (userAns === opt.key);
           }
           if (isSelected) card.classList.add('selected');
 
-          card.innerHTML = '<div class="opt-key">' + opt.key + '</div><div class="opt-text">' + opt.text + '</div>';
+          card.innerHTML = 
+            '<div class="opt-key">' + (q.isMultiple ? (isSelected ? '☑' : '☐') : opt.key) + '</div>' +
+            '<div class="opt-text">' + opt.text + '</div>' +
+            (q.isMultiple ? '<div class="opt-check-indicator">Đã chọn ✓</div>' : '');
 
           card.onclick = () => {
             let newVal;
@@ -8451,8 +8530,8 @@ const AGENT_QUESTIONS_DATA = [
       const q = filtered[appState.currentIndex];
       const userAns = q.agentId ? appState.agentUserAnswers[q.id] : appState.userAnswers[q.id];
 
-      if (!userAns) {
-        alert('Vui lòng chọn hoặc điền câu trả lời trước khi kiểm tra!');
+      if (!userAns || (Array.isArray(userAns) && userAns.length === 0)) {
+        alert('Vui lòng chọn ít nhất một câu trả lời trước khi kiểm tra!');
         return;
       }
 
@@ -8470,7 +8549,11 @@ const AGENT_QUESTIONS_DATA = [
 
         const optCards = document.querySelectorAll('#optionsContainer .option-card');
         optCards.forEach(c => {
-          const key = c.querySelector('.opt-key').innerText.trim();
+          const rawText = c.innerText;
+          const optMatch = c.querySelector('.opt-text') ? c.querySelector('.opt-text').innerText : '';
+          const targetOpt = q.options.find(o => optMatch.includes(o.text));
+          const key = targetOpt ? targetOpt.key : '';
+
           const isRightOpt = expected.includes(key);
           if (isRightOpt) {
             c.classList.add('correct');
@@ -8788,15 +8871,21 @@ const AGENT_QUESTIONS_DATA = [
       const card = document.createElement('div');
       card.className = 'question-card';
 
+      let mockTypeLabel = 'Trắc nghiệm đơn';
+      if (q.type === 'choice' && q.isMultiple) mockTypeLabel = '☑️ Chọn nhiều đáp án';
+      else if (q.type === 'sub_items') mockTypeLabel = 'Nhận định (Yes/No)';
+
       card.innerHTML = 
         '<div class="q-header">' +
           '<div class="q-badges">' +
             '<span class="badge badge-primary">Câu ' + (mockCurrentIdx + 1) + ' / 40</span>' +
             '<span class="badge badge-topic">' + q.topic + '</span>' +
+            '<span class="badge ' + (q.isMultiple ? 'badge-multi' : 'badge-type') + '">' + mockTypeLabel + '</span>' +
           '</div>' +
           '<div style="font-size: 0.85rem; color: var(--text-muted);">Đã làm: ' + Object.keys(mockUserAnswers).length + '/40</div>' +
         '</div>' +
         '<div class="q-stem">' + q.stem + '</div>' +
+        (q.isMultiple ? '<div class="multi-select-notice">☑️ Câu hỏi này yêu cầu <strong>CHỌN NHIỀU ĐÁP ÁN</strong>. Hãy nhấp để chọn tất cả đáp án đúng.</div>' : '') +
         '<div class="options-list" id="mockOptionsList"></div>' +
         '<div class="q-actions">' +
           '<div style="display: flex; gap: 0.5rem;">' +
@@ -8815,12 +8904,20 @@ const AGENT_QUESTIONS_DATA = [
         q.options.forEach(opt => {
           const optCard = document.createElement('div');
           optCard.className = 'option-card';
+          if (q.isMultiple) optCard.classList.add('is-multi-opt');
+          
           let isSelected = false;
-          if (Array.isArray(userAns)) isSelected = userAns.includes(opt.key);
-          else isSelected = (userAns === opt.key);
+          if (q.isMultiple) {
+            isSelected = Array.isArray(userAns) && userAns.includes(opt.key);
+          } else {
+            isSelected = (userAns === opt.key);
+          }
 
           if (isSelected) optCard.classList.add('selected');
-          optCard.innerHTML = '<div class="opt-key">' + opt.key + '</div><div class="opt-text">' + opt.text + '</div>';
+          optCard.innerHTML = 
+            '<div class="opt-key">' + (q.isMultiple ? (isSelected ? '☑' : '☐') : opt.key) + '</div>' +
+            '<div class="opt-text">' + opt.text + '</div>' +
+            (q.isMultiple ? '<div class="opt-check-indicator">Đã chọn ✓</div>' : '');
 
           optCard.onclick = () => {
             if (q.isMultiple) {
