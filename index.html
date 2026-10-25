@@ -441,29 +441,34 @@
 
     /* Sub-items (Yes/No, Đúng/Sai) */
     .subitem-card {
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 0.85rem 1rem;
-      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 0.95rem 1.15rem;
+      background: var(--surface);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 1rem;
+      gap: 1.2rem;
       flex-wrap: wrap;
+      transition: border-color 0.2s;
     }
-    .subitem-text { font-size: 0.92rem; flex: 1; min-width: 220px; line-height: 1.5; }
-    .subitem-buttons { display: flex; gap: 0.5rem; }
+    .subitem-card.has-choice {
+      border-color: var(--primary-light);
+    }
+    .subitem-text { font-size: 0.95rem; flex: 1; min-width: 240px; line-height: 1.6; }
+    .subitem-buttons { display: flex; gap: 0.6rem; align-items: center; }
     .btn-toggle-sub {
-      padding: 0.4rem 0.85rem;
-      border-radius: 6px;
-      border: 1px solid var(--border);
-      background: var(--surface);
+      padding: 0.5rem 1.1rem;
+      border-radius: 8px;
+      border: 1.5px solid var(--border);
+      background: var(--bg);
       color: var(--text);
-      font-size: 0.82rem;
-      font-weight: 600;
+      font-size: 0.88rem;
+      font-weight: 700;
       cursor: pointer;
       transition: all 0.15s;
     }
+    .btn-toggle-sub:hover { border-color: var(--primary-light); }
     .btn-toggle-sub.active { background: var(--primary); color: white; border-color: var(--primary); }
     .btn-toggle-sub.is-correct { background: var(--success) !important; color: white !important; border-color: var(--success) !important; }
     .btn-toggle-sub.is-wrong { background: var(--danger) !important; color: white !important; border-color: var(--danger) !important; }
@@ -543,10 +548,10 @@
     .explanation-box.show { display: block; animation: fadeIn 0.3s ease; }
     .explanation-box.box-agent { border-left-color: var(--agent); background: var(--agent-bg); }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
-    .exp-title { font-size: 0.9rem; font-weight: 700; color: var(--primary-dark); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.4rem; }
+    .exp-title { font-size: 0.95rem; font-weight: 700; color: var(--primary-dark); margin-bottom: 0.6rem; display: flex; align-items: center; gap: 0.4rem; }
     .box-agent .exp-title { color: var(--agent); }
-    .exp-ans { font-weight: 700; color: var(--text); margin-bottom: 0.5rem; font-size: 0.95rem; }
-    .exp-body { font-size: 0.9rem; line-height: 1.6; color: var(--text-muted); }
+    .exp-ans { font-weight: 700; color: var(--text); margin-bottom: 0.65rem; font-size: 1rem; line-height: 1.5; }
+    .exp-body { font-size: 0.92rem; line-height: 1.65; color: var(--text-muted); }
 
     /* Views */
     .view-container { display: none; }
@@ -634,7 +639,7 @@
         <div class="brand-icon">🎓</div>
         <div class="brand-title">
           <h1>LUYỆN THI CHỨNG CHỈ GEN AI & AI AGENT (IIG)</h1>
-          <p>175 câu chuẩn IIG + 20 câu AI Agent • Đã hỗ trợ trọn vẹn chọn nhiều đáp án</p>
+          <p>175 câu chuẩn IIG + 20 câu AI Agent • Hệ thống chấm điểm & phản hồi thông minh</p>
         </div>
       </div>
       <div class="header-actions">
@@ -2916,7 +2921,7 @@
     "matching": null,
     "rawAnswer": "a. Đúng; b. Đúng; c. Đúng",
     "parsedAnswer": null,
-    "explanation": "Rủi ro khi dùng Chatbot AI tài chính: Xử lý sai dữ liệu tài chính, làm lộ dữ liệu cá nhân nhạy cảm, và không thể cung cấp sự thấu cảm/hỗ trợ cảm xúc như con người.",
+    "explanation": "<strong>Phân tích chi tiết rủi ro Chatbot tài chính (Câu 53):</strong><br>• <strong>Ý a (Đúng)</strong>: AI tạo sinh có thể xử lý sai dữ liệu tài chính (ảo giác số liệu, tính sai lãi suất/số dư), dẫn đến thiệt hại kinh tế và khách hàng bất mãn.<br>• <strong>Ý b (Đúng)</strong>: Xử lý sai hoặc làm rò rỉ dữ liệu định danh cá nhân nhạy cảm (PII) vi phạm luật bảo mật dữ liệu, gây mất uy tín và lòng tin khách hàng.<br>• <strong>Ý c (Đúng)</strong>: Khách hàng gặp sự cố tài chính cần sự thấu cảm, lắng nghe và hỗ trợ tâm lý của con người. Chatbot là hệ thống thuật toán không có cảm xúc thật nên không thể cung cấp sự đồng cảm này, dễ khiến khách hàng ức chế và không hài lòng.",
     "imageType": null
   },
   {
@@ -7969,7 +7974,7 @@ const AGENT_QUESTIONS_DATA = [
     const ALL_QUESTIONS = [...QUESTIONS_DATA, ...AGENT_QUESTIONS_DATA];
 
     // STATE
-    const STORAGE_KEY = 'GENAI_IIG_EXAM_PREP_V5';
+    const STORAGE_KEY = 'GENAI_IIG_EXAM_PREP_V6';
     let appState = {
       currentIndex: 0,
       agentCurrentIndex: 0,
@@ -8010,34 +8015,39 @@ const AGENT_QUESTIONS_DATA = [
     }
 
     // SILENT AUTO-GRADING HELPER
+    // Returns: true (correct), false (wrong), or null (in progress / incomplete answer)
     function isAnswerCorrect(q, userAns) {
-      if (!userAns) return null; // not answered yet
+      if (!userAns) return null; // not answered
       
       if (q.type === 'choice' || q.agentId) {
         const expected = q.parsedAnswer || (q.answer ? [q.answer] : []);
         if (q.isMultiple) {
-          if (!Array.isArray(userAns)) return false;
+          if (!Array.isArray(userAns)) return null;
+          // If user hasn't selected enough options yet, it's still in progress!
+          if (userAns.length < expected.length) return null;
+          if (userAns.length > expected.length) return false;
           return (expected.length === userAns.length && expected.every(k => userAns.includes(k)));
         } else {
           return expected.includes(userAns);
         }
       } else if (q.type === 'sub_items' && q.subItems) {
-        if (typeof userAns !== 'object') return false;
+        if (typeof userAns !== 'object') return null;
         let items = q.subItems.items;
         let allRight = true;
         let answeredCount = 0;
         for (let s of items) {
           const u = userAns[s.key];
           if (u) answeredCount++;
-          const exp = s.expected.toLowerCase().trim();
+          const exp = (s.expected || '').toLowerCase().trim();
           if (!u || !exp.includes(u.toLowerCase().trim())) {
             allRight = false;
           }
         }
-        if (answeredCount < items.length) return false;
+        // Crucial: Only evaluate when ALL sub-items are answered!
+        if (answeredCount < items.length) return null;
         return allRight;
       } else if ((q.type === 'matching' || q.type === 'fill_prompt') && q.matching) {
-        if (typeof userAns !== 'object') return false;
+        if (typeof userAns !== 'object') return null;
         const correctMap = q.matching.correct;
         let keys = Object.keys(correctMap);
         let allRight = true;
@@ -8050,7 +8060,8 @@ const AGENT_QUESTIONS_DATA = [
             allRight = false;
           }
         }
-        if (answeredCount < keys.length) return false;
+        // Crucial: Only evaluate when ALL rows are matched!
+        if (answeredCount < keys.length) return null;
         return allRight;
       }
       return false;
@@ -8073,6 +8084,9 @@ const AGENT_QUESTIONS_DATA = [
         } else if (result === false) {
           if (!appState.wrongQuestionIds.includes(qId)) appState.wrongQuestionIds.push(qId);
           appState.correctQuestionIds = appState.correctQuestionIds.filter(id => id !== qId);
+        } else {
+          // If result is null (still selecting), remove from wrong list temporarily so it doesn't falsely warn
+          appState.wrongQuestionIds = appState.wrongQuestionIds.filter(id => id !== qId);
         }
       }
 
@@ -8365,7 +8379,7 @@ const AGENT_QUESTIONS_DATA = [
         document.getElementById('qTypeBadge').className = 'badge badge-type';
       }
 
-      // Wrong status badge
+      // Wrong status badge: only show if answer was fully evaluated as wrong!
       const isCurrentlyWrong = appState.wrongQuestionIds.includes(q.id);
       document.getElementById('qWrongStatusBadge').style.display = isCurrentlyWrong ? 'inline-block' : 'none';
 
@@ -8397,7 +8411,6 @@ const AGENT_QUESTIONS_DATA = [
       // Multiple choice banner toggle
       let rawUserAns = q.agentId ? appState.agentUserAnswers[q.id] : appState.userAnswers[q.id];
       if (q.isMultiple && typeof rawUserAns === 'string') {
-        // Sanitize legacy single-string answers in localStorage for multi-choice questions
         rawUserAns = [rawUserAns];
         if (q.agentId) appState.agentUserAnswers[q.id] = rawUserAns;
         else appState.userAnswers[q.id] = rawUserAns;
@@ -8462,6 +8475,7 @@ const AGENT_QUESTIONS_DATA = [
           const subCard = document.createElement('div');
           subCard.className = 'subitem-card';
           const currentSubAns = (userAns && typeof userAns === 'object') ? userAns[sub.key] : null;
+          if (currentSubAns) subCard.classList.add('has-choice');
 
           let btnsHtml = '';
           choices.forEach(ch => {
@@ -8535,6 +8549,15 @@ const AGENT_QUESTIONS_DATA = [
         return;
       }
 
+      if (q.type === 'sub_items' && q.subItems) {
+        let items = q.subItems.items;
+        let missing = items.filter(s => !userAns || !userAns[s.key]);
+        if (missing.length > 0) {
+          alert('Vui lòng trả lời đầy đủ tất cả các ý (' + missing.map(s => s.key).join(', ') + ') trước khi kiểm tra đáp án!');
+          return;
+        }
+      }
+
       let isCorrect = false;
 
       if (q.type === 'choice') {
@@ -8549,7 +8572,6 @@ const AGENT_QUESTIONS_DATA = [
 
         const optCards = document.querySelectorAll('#optionsContainer .option-card');
         optCards.forEach(c => {
-          const rawText = c.innerText;
           const optMatch = c.querySelector('.opt-text') ? c.querySelector('.opt-text').innerText : '';
           const targetOpt = q.options.find(o => optMatch.includes(o.text));
           const key = targetOpt ? targetOpt.key : '';
@@ -8568,14 +8590,14 @@ const AGENT_QUESTIONS_DATA = [
 
         subItems.forEach((sub, i) => {
           const u = (userAns && typeof userAns === 'object') ? userAns[sub.key] : null;
-          const exp = sub.expected.toLowerCase().trim();
-          const isSubRight = (u && exp.includes(u.toLowerCase()));
+          const exp = (sub.expected || '').toLowerCase().trim();
+          const isSubRight = (u && exp.includes(u.toLowerCase().trim()));
           if (!isSubRight) allMatched = false;
 
           if (rows[i]) {
             const btns = rows[i].querySelectorAll('.btn-toggle-sub');
             btns.forEach(b => {
-              const val = b.getAttribute('data-val').toLowerCase();
+              const val = b.getAttribute('data-val').toLowerCase().trim();
               if (exp.includes(val)) {
                 b.classList.add('is-correct');
               } else if (b.classList.contains('active')) {
