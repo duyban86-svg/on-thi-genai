@@ -8456,6 +8456,7 @@ const AGENT_QUESTIONS_DATA = [
         q.options.forEach(opt => {
           const card = document.createElement('div');
           card.className = 'option-card';
+          card.setAttribute('data-key', opt.key);
           if (q.isMultiple) card.classList.add('is-multi-opt');
           
           let isSelected = false;
@@ -8593,10 +8594,7 @@ const AGENT_QUESTIONS_DATA = [
 
         const optCards = document.querySelectorAll('#optionsContainer .option-card');
         optCards.forEach(c => {
-          const optMatch = c.querySelector('.opt-text') ? c.querySelector('.opt-text').innerText : '';
-          const targetOpt = q.options.find(o => optMatch.includes(o.text));
-          const key = targetOpt ? targetOpt.key : '';
-
+          const key = c.getAttribute('data-key') || (c.querySelector('.opt-key') ? (c.querySelector('.opt-key').textContent || c.querySelector('.opt-key').innerText || '') : '').trim();
           const isRightOpt = expected.includes(key);
           if (isRightOpt) {
             c.classList.add('correct');
@@ -8693,6 +8691,7 @@ const AGENT_QUESTIONS_DATA = [
       q.options.forEach(opt => {
         const card = document.createElement('div');
         card.className = 'option-card';
+        card.setAttribute('data-key', opt.key);
         if (userAns === opt.key) card.classList.add('selected');
 
         card.innerHTML = '<div class="opt-key" style="color: var(--agent);">' + opt.key + '</div><div class="opt-text">' + opt.text + '</div>';
@@ -8730,7 +8729,7 @@ const AGENT_QUESTIONS_DATA = [
 
       const optCards = document.querySelectorAll('#agentOptionsContainer .option-card');
       optCards.forEach(c => {
-        const key = c.querySelector('.opt-key').innerText.trim();
+        const key = c.getAttribute('data-key') || (c.querySelector('.opt-key') ? (c.querySelector('.opt-key').textContent || c.querySelector('.opt-key').innerText || '') : '').trim();
         if (key === q.answer) {
           c.classList.add('correct');
         } else if (c.classList.contains('selected') && key !== q.answer) {
